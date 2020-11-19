@@ -36,12 +36,12 @@ const (
 type CasbinRule struct {
 	ID    uint   `gorm:"primaryKey;autoIncrement"`
 	PType string `gorm:"size:40;uniqueIndex:unique_index"`
-	V0    string `gorm:"size:40;uniqueIndex:unique_index"`
-	V1    string `gorm:"size:40;uniqueIndex:unique_index"`
-	V2    string `gorm:"size:40;uniqueIndex:unique_index"`
-	V3    string `gorm:"size:40;uniqueIndex:unique_index"`
-	V4    string `gorm:"size:40;uniqueIndex:unique_index"`
-	V5    string `gorm:"size:40;uniqueIndex:unique_index"`
+	V0    string `gorm:"size:250;uniqueIndex:unique_index"`
+	V1    string `gorm:"size:250;uniqueIndex:unique_index"`
+	V2    string `gorm:"size:250;uniqueIndex:unique_index"`
+	V3    string `gorm:"size:250;uniqueIndex:unique_index"`
+	V4    string `gorm:"size:250;uniqueIndex:unique_index"`
+	V5    string `gorm:"size:250;uniqueIndex:unique_index"`
 }
 
 type Filter struct {
@@ -277,25 +277,33 @@ func (a *Adapter) dropTable() error {
 }
 
 func loadPolicyLine(line CasbinRule, model model.Model) {
-	var p = []string{line.PType,
-		line.V0, line.V1, line.V2, line.V3, line.V4, line.V5}
+	// to prevent esaping issues for sub rules we will load model directly
+	var p = []string{line.V0, line.V1, line.V2, line.V3, line.V4, line.V5}
 
-	var lineText string
-	if line.V5 != "" {
-		lineText = strings.Join(p, ", ")
-	} else if line.V4 != "" {
-		lineText = strings.Join(p[:6], ", ")
-	} else if line.V3 != "" {
-		lineText = strings.Join(p[:5], ", ")
-	} else if line.V2 != "" {
-		lineText = strings.Join(p[:4], ", ")
-	} else if line.V1 != "" {
-		lineText = strings.Join(p[:3], ", ")
-	} else if line.V0 != "" {
-		lineText = strings.Join(p[:2], ", ")
-	}
+	key := line.PType
+	sec := key[:1]
+	model[sec][key].Policy = append(m[sec][key].Policy, p)
+	model[sec][key].PolicyMap[strings.Join(p, model.DefaultSep)] = len(m[sec][key].Policy) - 1
 
-	persist.LoadPolicyLine(lineText, model)
+	//var p = []string{line.PType,
+	//	line.V0, line.V1, line.V2, line.V3, line.V4, line.V5}
+	//
+	//var lineText string
+	//if line.V5 != "" {
+	//	lineText = strings.Join(p, ", ")
+	//} else if line.V4 != "" {
+	//	lineText = strings.Join(p[:6], ", ")
+	//} else if line.V3 != "" {
+	//	lineText = strings.Join(p[:5], ", ")
+	//} else if line.V2 != "" {
+	//	lineText = strings.Join(p[:4], ", ")
+	//} else if line.V1 != "" {
+	//	lineText = strings.Join(p[:3], ", ")
+	//} else if line.V0 != "" {
+	//	lineText = strings.Join(p[:2], ", ")
+	//}
+
+	//persist.LoadPolicyLine(lineText, model)
 }
 
 // LoadPolicy loads policy from database.
