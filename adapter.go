@@ -19,8 +19,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/casbin/casbin/v2/model"
-	"github.com/casbin/casbin/v2/persist"
+	casbinmodel "github.com/casbin/casbin/v2/model"
 	"github.com/jackc/pgconn"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -36,12 +35,12 @@ const (
 type CasbinRule struct {
 	ID    uint   `gorm:"primaryKey;autoIncrement"`
 	PType string `gorm:"size:40;uniqueIndex:unique_index"`
-	V0    string `gorm:"size:40;uniqueIndex:unique_index"`
-	V1    string `gorm:"size:40;uniqueIndex:unique_index"`
-	V2    string `gorm:"size:40;uniqueIndex:unique_index"`
-	V3    string `gorm:"size:40;uniqueIndex:unique_index"`
-	V4    string `gorm:"size:40;uniqueIndex:unique_index"`
-	V5    string `gorm:"size:40;uniqueIndex:unique_index"`
+	V0    string `gorm:"size:250;uniqueIndex:unique_index"`
+	V1    string `gorm:"size:250;uniqueIndex:unique_index"`
+	V2    string `gorm:"size:250;uniqueIndex:unique_index"`
+	V3    string `gorm:"size:250;uniqueIndex:unique_index"`
+	V4    string `gorm:"size:250;uniqueIndex:unique_index"`
+	V5    string `gorm:"size:250;uniqueIndex:unique_index"`
 }
 
 type Filter struct {
@@ -276,30 +275,38 @@ func (a *Adapter) dropTable() error {
 	return a.db.Migrator().DropTable(a.getTableInstance())
 }
 
-func loadPolicyLine(line CasbinRule, model model.Model) {
-	var p = []string{line.PType,
-		line.V0, line.V1, line.V2, line.V3, line.V4, line.V5}
+func loadPolicyLine(line CasbinRule, model casbinmodel.Model) {
+	// to prevent esaping issues for sub rules we will load casbinmodel directly
+	var p = []string{line.V0, line.V1, line.V2, line.V3, line.V4, line.V5}
 
-	var lineText string
-	if line.V5 != "" {
-		lineText = strings.Join(p, ", ")
-	} else if line.V4 != "" {
-		lineText = strings.Join(p[:6], ", ")
-	} else if line.V3 != "" {
-		lineText = strings.Join(p[:5], ", ")
-	} else if line.V2 != "" {
-		lineText = strings.Join(p[:4], ", ")
-	} else if line.V1 != "" {
-		lineText = strings.Join(p[:3], ", ")
-	} else if line.V0 != "" {
-		lineText = strings.Join(p[:2], ", ")
-	}
+	key := line.PType
+	sec := key[:1]
+	model[sec][key].Policy = append(model[sec][key].Policy, p)
+	model[sec][key].PolicyMap[strings.Join(p, casbinmodel.DefaultSep)] = len(model[sec][key].Policy) - 1
 
-	persist.LoadPolicyLine(lineText, model)
+	//var p = []string{line.PType,
+	//	line.V0, line.V1, line.V2, line.V3, line.V4, line.V5}
+	//
+	//var lineText string
+	//if line.V5 != "" {
+	//	lineText = strings.Join(p, ", ")
+	//} else if line.V4 != "" {
+	//	lineText = strings.Join(p[:6], ", ")
+	//} else if line.V3 != "" {
+	//	lineText = strings.Join(p[:5], ", ")
+	//} else if line.V2 != "" {
+	//	lineText = strings.Join(p[:4], ", ")
+	//} else if line.V1 != "" {
+	//	lineText = strings.Join(p[:3], ", ")
+	//} else if line.V0 != "" {
+	//	lineText = strings.Join(p[:2], ", ")
+	//}
+
+	//persist.LoadPolicyLine(lineText, model)
 }
 
 // LoadPolicy loads policy from database.
-func (a *Adapter) LoadPolicy(model model.Model) error {
+func (a *Adapter) LoadPolicy(model casbinmodel.Model) error {
 	var lines []CasbinRule
 	if err := a.db.Order("ID").Find(&lines).Error; err != nil {
 		return err
@@ -313,7 +320,7 @@ func (a *Adapter) LoadPolicy(model model.Model) error {
 }
 
 // LoadFilteredPolicy loads only policy rules that match the filter.
-func (a *Adapter) LoadFilteredPolicy(model model.Model, filter interface{}) error {
+func (a *Adapter) LoadFilteredPolicy(model casbinmodel.Model, filter interface{}) error {
 	var lines []CasbinRule
 
 	filterValue, ok := filter.(Filter)
@@ -393,7 +400,7 @@ func (a *Adapter) savePolicyLine(ptype string, rule []string) CasbinRule {
 }
 
 // SavePolicy saves policy to database.
-func (a *Adapter) SavePolicy(model model.Model) error {
+func (a *Adapter) SavePolicy(model casbinmodel.Model) error {
 	err := a.dropTable()
 	if err != nil {
 		return err
