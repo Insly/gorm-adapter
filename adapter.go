@@ -39,8 +39,8 @@ type CasbinRule struct {
 	V1    string `gorm:"size:250;uniqueIndex:unique_index"`
 	V2    string `gorm:"size:250;uniqueIndex:unique_index"`
 	V3    string `gorm:"size:250;uniqueIndex:unique_index"`
-	V4    string `gorm:"size:250;uniqueIndex:unique_index"`
-	V5    string `gorm:"size:250;uniqueIndex:unique_index"`
+	V4    string
+	V5    string
 }
 
 type Filter struct {
