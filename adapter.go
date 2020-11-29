@@ -34,11 +34,11 @@ const (
 
 type CasbinRule struct {
 	ID    uint   `gorm:"primaryKey;autoIncrement"`
-	PType string `gorm:"size:40;index:p_index"`
-	V0    string `gorm:"size:250;index:p_index"`
-	V1    string `gorm:"size:250;index:p_index"`
-	V2    string `gorm:"size:250;index:p_index"`
-	V3    string `gorm:"size:250;index:p_index"`
+	PType string `gorm:"size:40"`
+	V0    string `gorm:"size:250"`
+	V1    string `gorm:"size:250"`
+	V2    string `gorm:"size:250"`
+	V3    string `gorm:"size:250"`
 	V4    string
 	V5    string
 }
