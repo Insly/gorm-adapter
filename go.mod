@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/casbin/casbin/v2 v2.12.0
 	github.com/go-sql-driver/mysql v1.5.0
+	github.com/google/uuid v1.2.0 // indirect
 	github.com/jackc/pgconn v1.6.4
 	github.com/lib/pq v1.8.0
 	github.com/stretchr/testify v1.6.1

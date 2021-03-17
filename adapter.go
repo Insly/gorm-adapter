@@ -16,6 +16,7 @@ package gormadapter
 
 import (
 	"errors"
+	"github.com/google/uuid"
 	"runtime"
 	"strings"
 
@@ -33,12 +34,12 @@ const (
 )
 
 type CasbinRule struct {
-	ID    uint   `gorm:"autoIncrement"`
-	PType string `gorm:"size:40"`
-	V0    string `gorm:"size:250"`
-	V1    string `gorm:"size:250"`
-	V2    string `gorm:"size:250"`
-	V3    string `gorm:"size:250"`
+	ID    uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+	PType string    `gorm:"size:40"`
+	V0    string    `gorm:"size:250"`
+	V1    string    `gorm:"size:250"`
+	V2    string    `gorm:"size:250"`
+	V3    string    `gorm:"size:250"`
 	V4    string
 	V5    string
 }
